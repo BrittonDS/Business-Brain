@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusinessBrain AI — The AI CFO for Your Business</title>
+<meta name="description" content="BusinessBrain AI automatically tracks income, expenses, cash flow and invoices, and gives plain-English financial advice — like having a CFO on call 24/7.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230A1628'/%3E%3Cpath d='M15 55 L35 55 L42 35 L52 70 L60 45 L68 55 L85 55' stroke='%2317C68A' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#0A1628;
+  --ink-soft:#43536b;
+  --blue:#14315C;
+  --blue-bright:#2D5FB3;
+  --emerald:#0EA672;
+  --emerald-deep:#0A7F57;
+  --emerald-soft:#DEF5EB;
+  --amber:#C7852B;
+  --paper:#F6F7FB;
+  --card:#FFFFFF;
+  --line:#E4E7EF;
+  --line-soft:#EEF0F6;
+  --shadow: 0 1px 2px rgba(10,22,40,.04), 0 12px 32px -16px rgba(10,22,40,.14);
+  --radius-lg:20px;
+  --radius-md:14px;
+  --radius-sm:9px;
+  --maxw:1180px;
+  --serif:'Fraunces', Georgia, serif;
+  --sans:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+[data-theme="dark"]{
+  --ink:#EAF0FA;
+  --ink-soft:#93A2BD;
+  --paper:#080C14;
+  --card:#0F1622;
+  --line:#1D2739;
+  --line-soft:#161F2E;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 20px 48px -20px rgba(0,0,0,.6);
+  --emerald-soft:#0E2A22;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+body{
+  margin:0;
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  transition:background .35s ease, color .35s ease;
+}
+h1,h2,h3,h4{font-family:var(--serif); font-weight:500; margin:0; letter-spacing:-0.01em; color:var(--ink);}
+p{margin:0; color:var(--ink-soft); line-height:1.6;}
+a{color:inherit; text-decoration:none;}
+img{max-width:100%; display:block;}
+button{font-family:inherit; cursor:pointer;}
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+.mono{font-family:var(--mono);}
+section{position:relative;}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--emerald-deep); font-weight:600;
+}
+[data-theme="dark"] .eyebrow{color:var(--emerald);}
+.dot-live{
+  width:7px; height:7px; border-radius:50%; background:var(--emerald); position:relative; flex:none;
+}
+.dot-live::after{
+  content:''; position:absolute; inset:-5px; border-radius:50%; border:1.5px solid var(--emerald);
+  animation:pulse-ring 2.1s cubic-bezier(.4,0,.3,1) infinite;
+}
+@keyframes pulse-ring{
+  0%{ transform:scale(.5); opacity:.9;}
+  80%{ transform:scale(1.7); opacity:0;}
+  100%{ opacity:0;}
+}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:13px 22px; border-radius:999px; font-weight:600; font-size:14.5px;
+  border:1px solid transparent; transition:transform .25s ease, box-shadow .25s ease, background .25s ease, border-color .25s ease;
+  white-space:nowrap;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{ background:var(--ink); color:var(--paper); }
+[data-theme="dark"] .btn-primary{ background:var(--emerald); color:#06150F; }
+.btn-primary:hover{ box-shadow:0 10px 26px -10px rgba(10,22,40,.45); transform:translateY(-1px); }
+.btn-ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
+.btn-ghost:hover{ border-color:var(--ink-soft); }
+.btn-sm{ padding:9px 16px; font-size:13.5px; }
+.btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible{
+  outline:2px solid var(--emerald); outline-offset:2px;
+}
+
+/* ============ NAV ============ */
+header{
+  position:sticky; top:0; z-index:100;
+  backdrop-filter:blur(14px) saturate(160%);
+  background:color-mix(in srgb, var(--paper) 82%, transparent);
+  border-bottom:1px solid var(--line-soft);
+}
+.nav{ display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:var(--maxw); margin:0 auto; }
+.brand{ display:flex; align-items:center; gap:10px; font-family:var(--serif); font-size:19px; font-weight:600; color:var(--ink); }
+.brand-mark{
+  width:32px; height:32px; border-radius:9px; background:var(--ink); display:grid; place-items:center; flex:none;
+}
+[data-theme="dark"] .brand-mark{ background:var(--emerald); }
+.brand-mark svg{ width:18px; height:18px; }
+.brand-status{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-left:6px; padding:4px 9px; border:1px solid var(--line); border-radius:999px; }
+.nav-links{ display:flex; align-items:center; gap:30px; font-size:14.5px; font-weight:500; color:var(--ink-soft); }
+.nav-links a{ transition:color .2s; }
+.nav-links a:hover{ color:var(--ink); }
+.nav-right{ display:flex; align-items:center; gap:10px; }
+.theme-toggle{
+  width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card); display:grid; place-items:center; transition:border-color .2s;
+}
+.theme-toggle:hover{ border-color:var(--ink-soft); }
+.theme-toggle svg{ width:17px; height:17px; }
+.icon-sun{ display:none; } [data-theme="dark"] .icon-sun{ display:block;} [data-theme="dark"] .icon-moon{ display:none;}
+.nav-mobile-btn{ display:none; width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card); align-items:center; justify-content:center; }
+.nav-mobile-btn svg{ width:18px; height:18px; }
+.mobile-menu{ display:none; flex-direction:column; gap:2px; padding:10px 28px 20px; border-bottom:1px solid var(--line-soft); background:var(--paper); }
+.mobile-menu a{ padding:12px 4px; font-size:15px; font-weight:500; border-bottom:1px solid var(--line-soft); color:var(--ink); }
+.mobile-menu.open{ display:flex; }
+@media (max-width:880px){
+  .nav-links{ display:none; }
+  .nav-mobile-btn{ display:flex; }
+  .brand-status{ display:none; }
+}
+
+/* ============ HERO ============ */
+.hero{ padding:76px 0 40px; overflow:hidden; }
+.hero-grid{ display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center; }
+.hero h1{ font-size:clamp(34px,5vw,58px); line-height:1.04; margin:18px 0 20px; }
+.hero h1 em{ font-style:italic; color:var(--emerald-deep); }
+[data-theme="dark"] .hero h1 em{ color:var(--emerald); }
+.hero-sub{ font-size:17px; max-width:480px; margin-bottom:30px; }
+.hero-ctas{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:34px; }
+.hero-proof{ display:flex; align-items:center; gap:14px; font-size:13px; color:var(--ink-soft); }
+.avatar-stack{ display:flex; }
+.avatar-stack span{
+  width:28px; height:28px; border-radius:50%; border:2px solid var(--paper); margin-left:-8px; display:inline-block;
+  background:linear-gradient(135deg,var(--blue-bright),var(--emerald));
+}
+.avatar-stack span:first-child{ margin-left:0; }
+
+/* Vitals card (signature element) */
+.vitals-card{
+  background:var(--ink); border-radius:24px; padding:26px 26px 22px; color:#EAF0FA;
+  box-shadow: 0 30px 70px -30px rgba(10,22,40,.55);
+  position:relative;
+}
+[data-theme="dark"] .vitals-card{ background:#0B1220; border:1px solid var(--line); }
+.vitals-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+.vitals-label{ font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#8CA0C4; }
+.vitals-score{ display:flex; align-items:baseline; gap:6px; margin-top:6px;}
+.vitals-score .num{ font-family:var(--serif); font-size:38px; color:#fff; }
+.vitals-score .lbl{ font-size:12.5px; color:var(--emerald); font-weight:600; }
+.vitals-badge{ display:flex; align-items:center; gap:6px; background:rgba(14,166,114,.14); border:1px solid rgba(14,166,114,.35); color:var(--emerald); padding:6px 11px; border-radius:999px; font-family:var(--mono); font-size:11.5px; }
+.pulse-wrap{ position:relative; height:120px; margin:6px 0 16px; }
+.pulse-wrap svg{ width:100%; height:100%; overflow:visible; }
+.pulse-line{ fill:none; stroke:var(--emerald); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 8px rgba(14,166,114,.55)); stroke-dasharray:600; stroke-dashoffset:600; animation:draw-pulse 2.6s ease-in-out infinite; }
+@keyframes draw-pulse{ 0%{stroke-dashoffset:600;} 55%{stroke-dashoffset:0;} 100%{stroke-dashoffset:-600;} }
+.pulse-grid line{ stroke:rgba(255,255,255,.06); stroke-width:1; }
+.vitals-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding-top:16px; border-top:1px solid rgba(255,255,255,.09); }
+.vitals-stats div{ display:flex; flex-direction:column; gap:4px; }
+.vitals-stats .k{ font-size:11px; color:#8CA0C4; }
+.vitals-stats .v{ font-family:var(--mono); font-size:15.5px; color:#fff; font-weight:500; }
+.v.up{ color:var(--emerald); } .v.down{ color:#E8896B; }
+@media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+/* ============ LOGO STRIP ============ */
+.logostrip{ padding:34px 0; border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft); }
+.logostrip .wrap{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:22px; }
+.logostrip .cap{ font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+.logo-row{ display:flex; gap:34px; flex-wrap:wrap; opacity:.8; }
+.logo-row span{ font-weight:700; font-size:15px; color:var(--ink-soft); letter-spacing:-.01em; }
+
+/* ============ SECTION HEADS ============ */
+.section{ padding:96px 0; }
+.section-head{ max-width:640px; margin-bottom:52px; }
+.section-head h2{ font-size:clamp(28px,3.6vw,40px); margin:14px 0 14px; line-height:1.12; }
+.section-head p{ font-size:16.5px; }
+.center{ text-align:center; margin-left:auto; margin-right:auto; }
+
+/* ============ FEATURES ============ */
+.feature-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; }
+.feature{ background:var(--card); padding:30px 26px; transition:background .25s; }
+.feature:hover{ background:var(--paper); }
+.feature-icon{ width:38px; height:38px; border-radius:10px; background:var(--emerald-soft); display:grid; place-items:center; margin-bottom:18px; }
+.feature-icon svg{ width:19px; height:19px; stroke:var(--emerald-deep); }
+[data-theme="dark"] .feature-icon svg{ stroke:var(--emerald); }
+.feature h3{ font-size:17px; font-weight:600; font-family:var(--sans); margin-bottom:8px; }
+.feature p{ font-size:14px; }
+@media (max-width:900px){ .feature-grid{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:560px){ .feature-grid{ grid-template-columns:1fr; } }
+
+/* ============ DASHBOARD PREVIEW ============ */
+.dash-shell{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.dash-topbar{ display:flex; align-items:center; gap:8px; padding:14px 18px; border-bottom:1px solid var(--line-soft); }
+.dash-topbar .dots{ display:flex; gap:6px; }
+.dash-topbar .dots span{ width:9px; height:9px; border-radius:50%; background:var(--line); }
+.dash-topbar .path{ margin-left:10px; font-family:var(--mono); font-size:12px; color:var(--ink-soft); }
+.dash-body{ display:grid; grid-template-columns:220px 1fr; min-height:460px; }
+.dash-side{ border-right:1px solid var(--line-soft); padding:20px 14px; display:flex; flex-direction:column; gap:2px; }
+.dash-side a{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:500; color:var(--ink-soft); }
+.dash-side a.active{ background:var(--emerald-soft); color:var(--emerald-deep); }
+[data-theme="dark"] .dash-side a.active{ color:var(--emerald); }
+.dash-side a svg{ width:15px; height:15px; flex:none; }
+.dash-main{ padding:22px 24px; }
+.dash-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
+.stat-card{ border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; }
+.stat-card .k{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+.stat-card .v{ font-family:var(--mono); font-size:21px; font-weight:600; }
+.stat-card .delta{ font-family:var(--mono); font-size:11.5px; margin-top:6px; display:inline-block; }
+.delta.up{ color:var(--emerald-deep);} [data-theme="dark"] .delta.up{color:var(--emerald);}
+.delta.down{ color:#C24E30; }
+.dash-chartrow{ display:grid; grid-template-columns:1.5fr 1fr; gap:14px; }
+.chart-card, .health-card{ border:1px solid var(--line); border-radius:var(--radius-md); padding:18px; }
+.chart-card h4, .health-card h4{ font-family:var(--sans); font-size:13.5px; font-weight:600; margin-bottom:14px; color:var(--ink); }
+.bars{ display:flex; align-items:flex-end; gap:8px; height:130px; }
+.bars .bar{ flex:1; border-radius:5px 5px 0 0; background:linear-gradient(180deg, var(--emerald), var(--emerald-deep)); opacity:.85; }
+.ring-wrap{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.ring{ width:120px; height:120px; }
+.ring circle{ fill:none; stroke-width:9; }
+.ring .bg{ stroke:var(--line-soft); }
+.ring .fg{ stroke:var(--emerald); stroke-linecap:round; transform:rotate(-90deg); transform-origin:60px 60px; stroke-dasharray:314; stroke-dashoffset:314; transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1); }
+.ring-score{ font-family:var(--serif); font-size:26px; }
+@media (max-width:900px){ .dash-side{ display:none; } .dash-stats{ grid-template-columns:repeat(2,1fr);} .dash-chartrow{ grid-template-columns:1fr; } }
+
+/* ============ AI ASSISTANT ============ */
+.ai-panel{ display:grid; grid-template-columns:.85fr 1.15fr; gap:0; border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; background:var(--card); box-shadow:var(--shadow); }
+.ai-questions{ padding:30px 26px; border-right:1px solid var(--line-soft); }
+.ai-questions .cap{ font-family:var(--mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin-bottom:16px; }
+.q-btn{ display:block; width:100%; text-align:left; padding:12px 14px; border-radius:11px; border:1px solid var(--line); background:transparent; color:var(--ink); font-size:13.8px; margin-bottom:9px; transition:border-color .2s, background .2s; }
+.q-btn:hover, .q-btn.active{ border-color:var(--emerald); background:var(--emerald-soft); }
+.ai-chat{ display:flex; flex-direction:column; height:100%; min-height:420px; }
+.chat-head{ display:flex; align-items:center; gap:10px; padding:16px 22px; border-bottom:1px solid var(--line-soft); }
+.chat-head .avatar{ width:30px; height:30px; border-radius:50%; background:var(--ink); display:grid; place-items:center; }
+[data-theme="dark"] .chat-head .avatar{ background:var(--emerald); }
+.chat-head .avatar svg{ width:15px; height:15px; }
+.chat-head .name{ font-weight:600; font-size:14px; }
+.chat-head .status{ font-size:11.5px; color:var(--emerald-deep); display:flex; align-items:center; gap:5px; }
+[data-theme="dark"] .chat-head .status{ color:var(--emerald); }
+.chat-body{ flex:1; padding:22px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; max-height:420px; }
+.msg{ max-width:82%; padding:12px 15px; border-radius:14px; font-size:14px; line-height:1.55; }
+.msg-user{ align-self:flex-end; background:var(--ink); color:#fff; border-bottom-right-radius:4px; }
+[data-theme="dark"] .msg-user{ background:var(--blue-bright); }
+.msg-ai{ align-self:flex-start; background:var(--paper); border:1px solid var(--line); border-bottom-left-radius:4px; color:var(--ink); }
+.msg-ai b{ color:var(--ink); }
+.typing{ display:inline-flex; gap:4px; align-self:flex-start; background:var(--paper); border:1px solid var(--line); padding:12px 15px; border-radius:14px; border-bottom-left-radius:4px; }
+.typing span{ width:6px; height:6px; border-radius:50%; background:var(--ink-soft); animation:bounce 1.2s infinite ease-in-out; }
+.typing span:nth-child(2){ animation-delay:.15s; } .typing span:nth-child(3){ animation-delay:.3s; }
+@keyframes bounce{ 0%,60%,100%{ transform:translateY(0); opacity:.4;} 30%{ transform:translateY(-4px); opacity:1;} }
+.chat-input{ display:flex; gap:10px; padding:16px 18px; border-top:1px solid var(--line-soft); }
+.chat-input input{ flex:1; border:1px solid var(--line); border-radius:999px; padding:11px 16px; font-size:13.8px; background:var(--paper); color:var(--ink); font-family:inherit; }
+.chat-input button{ width:40px; height:40px; border-radius:50%; background:var(--ink); border:none; display:grid; place-items:center; flex:none; }
+[data-theme="dark"] .chat-input button{ background:var(--emerald); }
+.chat-input button svg{ width:16px; height:16px; stroke:#fff; }
+[data-theme="dark"] .chat-input button svg{ stroke:#06150F; }
+@media (max-width:880px){ .ai-panel{ grid-template-columns:1fr; } .ai-questions{ border-right:none; border-bottom:1px solid var(--line-soft); } }
+
+/* ============ TESTIMONIALS ============ */
+.testi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.testi-card{ border:1px solid var(--line); border-radius:var(--radius-md); padding:26px; background:var(--card); display:flex; flex-direction:column; gap:16px; }
+.stars{ display:flex; gap:3px; }
+.stars svg{ width:14px; height:14px; fill:var(--amber); }
+.testi-quote{ font-size:14.5px; color:var(--ink); line-height:1.6; }
+.testi-who{ display:flex; align-items:center; gap:10px; margin-top:auto; }
+.testi-who .av{ width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--blue-bright),var(--emerald)); flex:none; }
+.testi-who .name{ font-size:13.5px; font-weight:600; }
+.testi-who .role{ font-size:12px; color:var(--ink-soft); }
+@media (max-width:900px){ .testi-grid{ grid-template-columns:1fr; } }
+
+/* ============ PRICING ============ */
+.price-toggle{ display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:44px; }
+.switch{ position:relative; width:50px; height:28px; border-radius:999px; background:var(--line); border:none; flex:none; }
+.switch::after{ content:''; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .25s ease; }
+.switch.on{ background:var(--emerald); }
+.switch.on::after{ transform:translateX(22px); }
+.save-badge{ font-family:var(--mono); font-size:11.5px; background:var(--emerald-soft); color:var(--emerald-deep); padding:3px 9px; border-radius:999px; }
+[data-theme="dark"] .save-badge{ color:var(--emerald); }
+.price-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; align-items:stretch; }
+.price-card{ border:1px solid var(--line); border-radius:var(--radius-lg); padding:28px 24px; background:var(--card); display:flex; flex-direction:column; }
+.price-card.feat{ border-color:var(--ink); box-shadow:0 20px 44px -22px rgba(10,22,40,.35); position:relative; }
+[data-theme="dark"] .price-card.feat{ border-color:var(--emerald); }
+.price-tag{ position:absolute; top:-12px; right:24px; background:var(--ink); color:#fff; font-family:var(--mono); font-size:11px; padding:5px 11px; border-radius:999px; }
+[data-theme="dark"] .price-tag{ background:var(--emerald); color:#06150F; }
+.price-card h3{ font-size:18px; font-family:var(--sans); font-weight:600; margin-bottom:6px; }
+.price-card .plan-sub{ font-size:13px; color:var(--ink-soft); margin-bottom:20px; min-height:36px; }
+.price-amt{ display:flex; align-items:baseline; gap:5px; margin-bottom:22px; font-family:var(--mono); }
+.price-amt .n{ font-size:34px; font-weight:600; color:var(--ink); }
+.price-amt .p{ font-size:13px; color:var(--ink-soft); }
+.price-list{ list-style:none; margin:0 0 24px; padding:0; display:flex; flex-direction:column; gap:11px; flex:1; }
+.price-list li{ display:flex; gap:9px; font-size:13.5px; color:var(--ink); align-items:flex-start; }
+.price-list svg{ width:15px; height:15px; stroke:var(--emerald-deep); flex:none; margin-top:2px; }
+[data-theme="dark"] .price-list svg{ stroke:var(--emerald); }
+@media (max-width:980px){ .price-grid{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:560px){ .price-grid{ grid-template-columns:1fr; } }
+
+/* ============ FAQ ============ */
+.faq-list{ max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius-lg); overflow:hidden; }
+.faq-item{ background:var(--card); }
+.faq-q{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px; padding:20px 22px; text-align:left; background:none; border:none; font-size:15px; font-weight:600; color:var(--ink); font-family:var(--sans); }
+.faq-q svg{ width:16px; height:16px; flex:none; transition:transform .3s ease; }
+.faq-item.open .faq-q svg{ transform:rotate(45deg); }
+.faq-a{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
+.faq-a p{ padding:0 22px 20px; font-size:14px; max-width:640px; }
+.faq-item.open .faq-a{ max-height:220px; }
+
+/* ============ CTA BANNER ============ */
+.cta-banner{ background:var(--ink); border-radius:28px; padding:64px 48px; text-align:center; position:relative; overflow:hidden; }
+[data-theme="dark"] .cta-banner{ background:#0B1220; border:1px solid var(--line); }
+.cta-banner h2{ color:#fff; font-size:clamp(26px,3.6vw,38px); margin-bottom:14px; }
+.cta-banner p{ color:#93A2BD; max-width:480px; margin:0 auto 30px; }
+.cta-banner .btns{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.cta-banner .btn-primary{ background:var(--emerald); color:#06150F; }
+.cta-banner .btn-ghost{ border-color:rgba(255,255,255,.25); color:#fff; }
+
+/* ============ FOOTER ============ */
+footer{ padding:64px 0 32px; border-top:1px solid var(--line-soft); }
+.foot-grid{ display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:32px; margin-bottom:48px; }
+.foot-brand p{ font-size:13.5px; max-width:260px; margin-top:12px; }
+.foot-col h5{ font-family:var(--sans); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:14px; font-weight:600; }
+.foot-col a{ display:block; font-size:13.8px; color:var(--ink); padding:6px 0; }
+.foot-col a:hover{ color:var(--emerald-deep); }
+[data-theme="dark"] .foot-col a:hover{ color:var(--emerald); }
+.foot-bottom{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; padding-top:24px; border-top:1px solid var(--line-soft); font-size:12.5px; color:var(--ink-soft); }
+.foot-bottom .social{ display:flex; gap:12px; }
+.foot-bottom .social a{ width:32px; height:32px; border:1px solid var(--line); border-radius:50%; display:grid; place-items:center; }
+.foot-bottom .social svg{ width:14px; height:14px; }
+@media (max-width:900px){ .foot-grid{ grid-template-columns:repeat(2,1fr); } }
+
+/* ============ REVEAL ============ */
+.reveal{ opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+.reveal.in{ opacity:1; transform:translateY(0); }
+
+/* ============ COUNTS / NUMS ============ */
+.stat-strip{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:30px; padding:40px 0; }
+.stat-strip .item{ display:flex; flex-direction:column; gap:4px; }
+.stat-strip .big{ font-family:var(--serif); font-size:38px; }
+.stat-strip .lbl{ font-size:13px; color:var(--ink-soft); }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <nav class="nav">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 14 L8 14 L10 8 L13 18 L16 11 L18 14 L21 14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      BusinessBrain
+      <span class="brand-status"><span class="dot-live"></span> AI CFO online</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Product</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#assistant">AI Assistant</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a href="#pricing" class="btn btn-ghost btn-sm" style="display:none" id="loginBtn">Log in</a>
+      <a href="#pricing" class="btn btn-primary btn-sm">Start Free</a>
+      <button class="nav-mobile-btn" id="mobileBtn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features">Product</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#assistant">AI Assistant</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot-live"></span> Monitoring 4,218 businesses right now</span>
+      <h1>The AI CFO<br>for <em>your</em> business.</h1>
+      <p class="hero-sub">BusinessBrain automatically tracks income, expenses, cash flow and invoices — then explains what it means in plain English, and tells you what to do next.</p>
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn btn-primary">Start Free</a>
+        <a href="#assistant" class="btn btn-ghost">Book a Demo</a>
+      </div>
+      <div class="hero-proof">
+        <div class="avatar-stack"><span></span><span></span><span></span><span></span></div>
+        Trusted by sole traders, agencies and tradespeople across the UK &amp; US
+      </div>
+    </div>
+
+    <div class="vitals-card reveal">
+      <div class="vitals-top">
+        <div>
+          <div class="vitals-label">Business Health Score</div>
+          <div class="vitals-score"><span class="num" id="heroScore">0</span><span class="lbl">/ 100 · Strong</span></div>
+        </div>
+        <div class="vitals-badge"><span class="dot-live"></span> Live</div>
+      </div>
+      <div class="pulse-wrap">
+        <svg viewBox="0 0 400 120" preserveAspectRatio="none">
+          <g class="pulse-grid">
+            <line x1="0" y1="30" x2="400" y2="30"/><line x1="0" y1="60" x2="400" y2="60"/><line x1="0" y1="90" x2="400" y2="90"/>
+          </g>
+          <path class="pulse-line" d="M0,60 L40,60 L55,20 L70,100 L85,60 L140,60 L155,40 L170,80 L185,60 L260,60 L275,15 L290,60 L400,60"/>
+        </svg>
+      </div>
+      <div class="vitals-stats">
+        <div><span class="k">Bank balance</span><span class="v mono" id="statBalance">£0</span></div>
+        <div><span class="k">Cash flow (30d)</span><span class="v up mono">+12.4%</span></div>
+        <div><span class="k">Tax set aside</span><span class="v mono" id="statTax">£0</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGO STRIP -->
+<div class="logostrip">
+  <div class="wrap">
+    <span class="cap">Connects with the tools you already use</span>
+    <div class="logo-row">
+      <span>Stripe</span><span>PayPal</span><span>Square</span><span>Shopify</span><span>QuickBooks</span><span>Xero</span><span>Amazon</span>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">What it does</span>
+      <h2>Every number, explained — not just displayed.</h2>
+      <p>Traditional accounting software shows you data. BusinessBrain tells you what it means, and what to do about it.</p>
+    </div>
+    <div class="feature-grid reveal" id="featureGrid"></div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<section class="section" id="dashboard" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The dashboard</span>
+      <h2>Understand your business in 30 seconds.</h2>
+      <p>Balance, revenue, expenses, invoices and your Business Health Score — all on one screen, updated automatically.</p>
+    </div>
+    <div class="dash-shell reveal">
+      <div class="dash-topbar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="path">app.businessbrain.ai/dashboard</span>
+      </div>
+      <div class="dash-body">
+        <div class="dash-side">
+          <a class="active">🏠&nbsp;&nbsp;Overview</a>
+          <a>💳&nbsp;&nbsp;Transactions</a>
+          <a>🧾&nbsp;&nbsp;Invoices</a>
+          <a>📈&nbsp;&nbsp;Cash Flow</a>
+          <a>🧮&nbsp;&nbsp;Tax Centre</a>
+          <a>💬&nbsp;&nbsp;AI Assistant</a>
+          <a>⚙️&nbsp;&nbsp;Settings</a>
+        </div>
+        <div class="dash-main">
+          <div class="dash-stats">
+            <div class="stat-card"><div class="k">Bank balance</div><div class="v">£18,420</div><div class="delta up">▲ 6.2% this month</div></div>
+            <div class="stat-card"><div class="k">Monthly revenue</div><div class="v">£24,980</div><div class="delta up">▲ 11% vs last</div></div>
+            <div class="stat-card"><div class="k">Monthly expenses</div><div class="v">£16,110</div><div class="delta down">▲ 3% vs last</div></div>
+            <div class="stat-card"><div class="k">Net profit</div><div class="v">£8,870</div><div class="delta up">▲ 18% vs last</div></div>
+          </div>
+          <div class="dash-chartrow">
+            <div class="chart-card">
+              <h4>Revenue vs expenses — last 6 months</h4>
+              <div class="bars" id="dashBars"></div>
+            </div>
+            <div class="health-card">
+              <h4>Business Health Score</h4>
+              <div class="ring-wrap">
+                <svg class="ring" viewBox="0 0 120 120">
+                  <circle class="bg" cx="60" cy="60" r="50"/>
+                  <circle class="fg" id="dashRing" cx="60" cy="60" r="50"/>
+                </svg>
+                <div class="ring-score" id="dashRingScore">0</div>
+                <p style="text-align:center; font-size:12.5px;">Strong — no overdue invoices, healthy reserves</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI ASSISTANT -->
+<section class="section" id="assistant">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Ask anything</span>
+      <h2>Your CFO answers in plain English.</h2>
+      <p>Tap a question below to see how BusinessBrain responds using real business data — no spreadsheets required.</p>
+    </div>
+    <div class="ai-panel reveal">
+      <div class="ai-questions">
+        <div class="cap">Try asking</div>
+        <button class="q-btn" data-q="fuel">How much did I spend on fuel?</button>
+        <button class="q-btn" data-q="subs">What subscriptions should I cancel?</button>
+        <button class="q-btn" data-q="hire">Can I afford another employee?</button>
+        <button class="q-btn" data-q="profit">Why is profit lower this month?</button>
+        <button class="q-btn" data-q="tax">How much tax should I set aside?</button>
+        <button class="q-btn" data-q="forecast">Predict my cash flow for the next 3 months.</button>
+      </div>
+      <div class="ai-chat">
+        <div class="chat-head">
+          <div class="avatar"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 14 L8 14 L10 8 L13 18 L16 11 L18 14 L21 14"/></svg></div>
+          <div>
+            <div class="name">BusinessBrain Assistant</div>
+            <div class="status"><span class="dot-live"></span> Reading your live data</div>
+          </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+          <div class="msg msg-ai">Hi — I'm your AI CFO. Ask me anything about your business, or tap a question on the left to see an example.</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Ask BusinessBrain anything…" aria-label="Ask BusinessBrain">
+          <button id="chatSend" aria-label="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<section class="wrap">
+  <div class="stat-strip reveal" style="border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);">
+    <div class="item"><span class="big mono" data-count="4218">0</span><span class="lbl">Businesses monitored</span></div>
+    <div class="item"><span class="big mono">£<span data-count="182">0</span>M</span><span class="lbl">Cash flow tracked</span></div>
+    <div class="item"><span class="big mono"><span data-count="96">0</span>%</span><span class="lbl">Categorised automatically</span></div>
+    <div class="item"><span class="big mono"><span data-count="30">0</span>s</span><span class="lbl">To understand your health score</span></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Trusted by owners like you</span>
+      <h2>Built for people who'd rather run their business than do the books.</h2>
+    </div>
+    <div class="testi-grid reveal" id="testiGrid"></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>Plans that grow with your business.</h2>
+      <p>Start free. Upgrade when you need deeper forecasting, more integrations, or a dedicated advisor.</p>
+    </div>
+    <div class="price-toggle reveal">
+      <span class="mono" style="font-size:13.5px;">Monthly</span>
+      <button class="switch" id="priceSwitch"></button>
+      <span class="mono" style="font-size:13.5px;">Yearly</span>
+      <span class="save-badge">Save 20%</span>
+    </div>
+    <div class="price-grid reveal" id="priceGrid"></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Questions</span>
+      <h2>Everything you're wondering.</h2>
+    </div>
+    <div class="faq-list reveal" id="faqList"></div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="wrap" style="padding-bottom:96px;">
+  <div class="cta-banner reveal">
+    <h2>Your CFO is ready when you are.</h2>
+    <p>Connect your bank in under two minutes. No credit card required to start.</p>
+    <div class="btns">
+      <a href="#pricing" class="btn btn-primary">Start Free</a>
+      <a href="#assistant" class="btn btn-ghost">Book a Demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 14 L8 14 L10 8 L13 18 L16 11 L18 14 L21 14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>BusinessBrain</div>
+        <p>The AI financial operating system for small businesses. Track, forecast, and understand your money — without the spreadsheets.</p>
+      </div>
+      <div class="foot-col"><h5>Product</h5>
+        <a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#assistant">AI Assistant</a><a href="#pricing">Pricing</a>
+      </div>
+      <div class="foot-col"><h5>Company</h5>
+        <a href="#">About</a><a href="#">Careers</a><a href="#">Blog</a><a href="#">Contact</a>
+      </div>
+      <div class="foot-col"><h5>Resources</h5>
+        <a href="#faq">FAQ</a><a href="#">Help Centre</a><a href="#">API Docs</a><a href="#">Status</a>
+      </div>
+      <div class="foot-col"><h5>Legal</h5>
+        <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Security</a><a href="#">GDPR</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> BusinessBrain AI. All rights reserved.</span>
+      <div class="social">
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+        <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 10v6M7 7v.01M12 16v-3.5a2 2 0 0 1 4 0V16M12 12.5V16"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   BusinessBrain AI — site script
+   Sections: theme, nav, data, render, chat demo, animations
+   ============================================================ */
+(function(){
+  "use strict";
+
+  /* ---------- THEME ---------- */
+  var root = document.body;
+  var themeToggle = document.getElementById('themeToggle');
+  function setTheme(mode){
+    root.setAttribute('data-theme', mode);
+    themeToggle.setAttribute('aria-pressed', mode === 'dark');
+  }
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(prefersDark ? 'dark' : 'light');
+  themeToggle.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+
+  /* ---------- MOBILE NAV ---------- */
+  var mobileBtn = document.getElementById('mobileBtn');
+  var mobileMenu = document.getElementById('mobileMenu');
+  mobileBtn.addEventListener('click', function(){
+    mobileMenu.classList.toggle('open');
+  });
+  mobileMenu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ mobileMenu.classList.remove('open'); });
+  });
+
+  /* ---------- YEAR ---------- */
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* ---------- DATA ---------- */
+  var FEATURES = [
+    { icon:'chat', title:'AI Financial Assistant', desc:'Ask questions in plain English and get answers grounded in your real numbers.' },
+    { icon:'tag', title:'Expense Tracking', desc:'Every transaction categorised automatically, with corrections the AI learns from.' },
+    { icon:'trend', title:'Cash Flow Forecasting', desc:'See 30, 60, 90-day and 12-month projections before a shortfall happens.' },
+    { icon:'invoice', title:'Invoice Tracking', desc:'Send invoices, chase late payers automatically, and see who owes what.' },
+    { icon:'scan', title:'Receipt Scanner', desc:'Snap a photo — merchant, VAT and total are extracted and matched instantly.' },
+    { icon:'heart', title:'Business Health Score', desc:'One number from 0–100 that captures profitability, reserves and growth.' },
+    { icon:'percent', title:'Tax Estimates', desc:'Live estimates for Corporation Tax, VAT and Income Tax — no surprises.' },
+    { icon:'bulb', title:'AI Recommendations', desc:'Daily, specific suggestions like "cancel this subscription" or "raise prices 5%."' }
+  ];
+  var ICONS = {
+    chat:'<path d="M21 12a8 8 0 1 1-3.6-6.7L21 4l-1 4.3A8 8 0 0 1 21 12z"/>',
+    tag:'<path d="M20 12l-8 8-9-9V4h7l10 10z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+    trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+    invoice:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+    scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M4 12h16"/>',
+    heart:'<path d="M12 21s-7-4.4-9.5-8.8C.7 8.6 2.4 5 6 5c2 0 3.3 1 4 2 .7-1 2-2 4-2 3.6 0 5.3 3.6 3.5 7.2C19 16.6 12 21 12 21z"/>',
+    percent:'<circle cx="7" cy="7" r="2.2"/><circle cx="17" cy="17" r="2.2"/><path d="M18 6L6 18"/>',
+    bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>'
+  };
+  var TESTIMONIALS = [
+    { name:'Priya Shah', role:'Owner, Shah Electrical', quote:'I used to dread Monday mornings with a spreadsheet. Now I open BusinessBrain, see my health score, and know exactly what to do.' },
+    { name:'Marcus Webb', role:'Freelance Designer', quote:'The tax estimate alone has saved me twice from an ugly surprise in January. It just quietly sets money aside for me.' },
+    { name:'Aisha Osei', role:'Founder, Osei Studio', quote:'Asking it "can I afford another hire" and getting a real answer, not a guess, changed how I make decisions.' }
+  ];
+  var PLANS = [
+    { name:'Starter', sub:'For sole traders getting started', monthly:0, yearly:0, feat:false,
+      items:['1 bank connection','Basic expense tracking','Monthly report','Email support'] },
+    { name:'Professional', sub:'For freelancers & contractors', monthly:19, yearly:15, feat:true, tag:'Most popular',
+      items:['Unlimited bank connections','AI Financial Assistant','Cash flow forecasting','Receipt scanner','Invoice tracking'] },
+    { name:'Business', sub:'For small teams up to 50', monthly:49, yearly:39, feat:false,
+      items:['Everything in Professional','Business Health Score','Tax Centre','Multi-user access','Priority support'] },
+    { name:'Enterprise', sub:'For agencies & multi-entity', monthly:null, yearly:null, feat:false,
+      items:['Everything in Business','Multi-business management','Dedicated advisor','Custom integrations','SLA & audit logs'] }
+  ];
+  var FAQS = [
+    { q:'Is my bank data secure?', a:'Yes. BusinessBrain uses read-only Open Banking connections, bank-level encryption, and never stores your login credentials. All data is encrypted at rest and in transit.' },
+    { q:'Do I need to know accounting to use this?', a:'No. BusinessBrain explains your finances in plain English and suggests specific actions — you never need to interpret a balance sheet yourself.' },
+    { q:'Which banks and tools does it connect to?', a:'Open Banking, Stripe, PayPal, Square, Shopify, Amazon, QuickBooks and Xero — plus manual CSV import for anything else.' },
+    { q:'Can I cancel anytime?', a:'Yes, all paid plans are month-to-month or annual with no lock-in. You can cancel from your account settings at any time.' },
+    { q:'Does BusinessBrain file my taxes?', a:'BusinessBrain estimates what you owe and sets reminders for key dates, so you and your accountant are never caught off guard. It doesn\\'t file returns for you.' }
+  ];
+
+  /* ---------- RENDER: FEATURES ---------- */
+  var featureGrid = document.getElementById('featureGrid');
+  featureGrid.innerHTML = FEATURES.map(function(f){
+    return '<div class="feature">' +
+      '<div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[f.icon]+'</svg></div>' +
+      '<h3>'+f.title+'</h3><p>'+f.desc+'</p></div>';
+  }).join('');
+
+  /* ---------- RENDER: DASH BARS ---------- */
+  var dashBars = document.getElementById('dashBars');
+  var barVals = [42,55,48,66,58,78];
+  dashBars.innerHTML = barVals.map(function(v){ return '<div class="bar" style="height:'+v+'%"></div>'; }).join('');
+
+  /* ---------- RENDER: TESTIMONIALS ---------- */
+  var star = '<svg viewBox="0 0 20 20"><path d="M10 1l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L10 15l-5.6 3.1 1.4-6.3L1 7.5l6.4-.6z"/></svg>';
+  document.getElementById('testiGrid').innerHTML = TESTIMONIALS.map(function(t){
+    return '<div class="testi-card"><div class="stars">'+star+star+star+star+star+'</div>' +
+      '<p class="testi-quote">"'+t.quote+'"</p>' +
+      '<div class="testi-who"><span class="av"></span><div><div class="name">'+t.name+'</div><div class="role">'+t.role+'</div></div></div></div>';
+  }).join('');
+
+  /* ---------- RENDER: PRICING ---------- */
+  var priceGrid = document.getElementById('priceGrid');
+  var yearly = false;
+  var checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  function renderPricing(){
+    priceGrid.innerHTML = PLANS.map(function(p){
+      var price = p.monthly === null ? 'Custom' : ('£' + (yearly ? p.yearly : p.monthly));
+      var per = p.monthly === null ? '' : '<span class="p">/mo'+(yearly?' billed yearly':'')+'</span>';
+      return '<div class="price-card'+(p.feat?' feat':'')+'">' +
+        (p.tag ? '<span class="price-tag">'+p.tag+'</span>' : '') +
+        '<h3>'+p.name+'</h3><div class="plan-sub">'+p.sub+'</div>' +
+        '<div class="price-amt"><span class="n">'+price+'</span>'+per+'</div>' +
+        '<ul class="price-list">'+p.items.map(function(i){ return '<li>'+checkSvg+'<span>'+i+'</span></li>'; }).join('')+'</ul>' +
+        '<a href="#" class="btn '+(p.feat?'btn-primary':'btn-ghost')+'">'+(p.monthly===null?'Contact Sales':'Start Free')+'</a>' +
+        '</div>';
+    }).join('');
+  }
+  renderPricing();
+  var priceSwitch = document.getElementById('priceSwitch');
+  priceSwitch.addEventListener('click', function(){
+    yearly = !yearly;
+    priceSwitch.classList.toggle('on', yearly);
+    renderPricing();
+  });
+
+  /* ---------- RENDER: FAQ ---------- */
+  var faqList = document.getElementById('faqList');
+  faqList.innerHTML = FAQS.map(function(f, i){
+    return '<div class="faq-item" data-i="'+i+'">' +
+      '<button class="faq-q">'+f.q+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>' +
+      '<div class="faq-a"><p>'+f.a+'</p></div></div>';
+  }).join('');
+  faqList.addEventListener('click', function(e){
+    var q = e.target.closest('.faq-q');
+    if(!q) return;
+    var item = q.closest('.faq-item');
+    var wasOpen = item.classList.contains('open');
+    faqList.querySelectorAll('.faq-item').forEach(function(el){ el.classList.remove('open'); });
+    if(!wasOpen) item.classList.add('open');
+  });
+
+  /* ---------- AI CHAT DEMO ---------- */
+  var RESPONSES = {
+    fuel: 'You\\'ve spent <b>£412</b> on fuel this month, up 8% from last month. That\\'s about 6% of total expenses — mostly from trips logged as "Client Travel."',
+    subs: 'You have 3 subscriptions with low usage: <b>Adobe Creative Cloud</b> (£52/mo, last used 41 days ago), <b>Canva Pro</b> (£11/mo), and <b>a duplicate cloud storage plan</b> (£8/mo). Cancelling all three would save <b>£852/year</b>.',
+    hire: 'Based on your current margins, a £32,000/year hire would take your reserves from 4.2 months to 2.1 months of runway. It\\'s affordable, but tight — I\\'d suggest waiting until Q3 revenue confirms the current growth trend.',
+    profit: 'Profit is down 9% this month mainly due to a one-off £1,200 equipment purchase and a 4% rise in fuel costs. Recurring revenue actually grew 6%, so the underlying trend is healthy.',
+    tax: 'At your current profit run-rate, I\\'d set aside <b>£1,840</b> this month for Corporation Tax and VAT combined. You\\'re currently on track — £14,200 has already been reserved this year.',
+    forecast: 'Over the next 3 months I\\'m forecasting cash flow to stay positive, with a tight point around <b>15 September</b> when your VAT payment and payroll land in the same week. I\\'d keep at least £3,500 extra buffer through that period.'
+  };
+  var chatBody = document.getElementById('chatBody');
+  var chatInput = document.getElementById('chatInput');
+  var chatSend = document.getElementById('chatSend');
+
+  function addMsg(text, who){
+    var div = document.createElement('div');
+    div.className = 'msg ' + (who === 'user' ? 'msg-user' : 'msg-ai');
+    div.innerHTML = text;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    return div;
+  }
+
+  function askQuestion(questionText, key){
+    addMsg(questionText, 'user');
+    var typingEl = document.createElement('div');
+    typingEl.className = 'typing';
+    typingEl.innerHTML = '<span></span><span></span><span></span>';
+    chatBody.appendChild(typingEl);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    var delay = 650 + Math.random()*500;
+    setTimeout(function(){
+      typingEl.remove();
+      var answer = RESPONSES[key] || 'Here\\'s what I found in your data — connect your bank in the live app to see this answer calculated from your real numbers.';
+      addMsg(answer, 'ai');
+    }, delay);
+  }
+
+  document.querySelectorAll('.q-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.q-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      askQuestion(btn.textContent, btn.getAttribute('data-q'));
+    });
+  });
+
+  function sendCustom(){
+    var val = chatInput.value.trim();
+    if(!val) return;
+    addMsg(val.replace(/</g,'&lt;'), 'user');
+    chatInput.value = '';
+    var typingEl = document.createElement('div');
+    typingEl.className = 'typing';
+    typingEl.innerHTML = '<span></span><span></span><span></span>';
+    chatBody.appendChild(typingEl);
+    chatBody.scrollTop = chatBody.scrollHeight;
+    setTimeout(function(){
+      typingEl.remove();
+      addMsg('Great question. In the live app I\\'d answer this using your connected accounts — try tapping one of the example questions on the left to see a full worked answer.', 'ai');
+    }, 700);
+  }
+  chatSend.addEventListener('click', sendCustom);
+  chatInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') sendCustom(); });
+
+  /* ---------- COUNTERS ---------- */
+  function animateCount(el, target, suffix){
+    var start = 0;
+    var dur = 1400;
+    var t0 = null;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var progress = Math.min((ts - t0) / dur, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var val = Math.floor(eased * target);
+      el.textContent = val.toLocaleString();
+      if(progress < 1) requestAnimationFrame(step);
+      else el.textContent = target.toLocaleString();
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- HERO NUMBERS ---------- */
+  animateCount(document.getElementById('heroScore'), 84);
+  (function(){
+    var balEl = document.getElementById('statBalance');
+    var taxEl = document.getElementById('statTax');
+    var b = {t:0}, tx = {t:0};
+    var dur = 1400, t0=null;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var progress = Math.min((ts-t0)/dur,1);
+      var eased = 1 - Math.pow(1-progress,3);
+      balEl.textContent = '£' + Math.floor(eased*18420).toLocaleString();
+      taxEl.textContent = '£' + Math.floor(eased*4210).toLocaleString();
+      if(progress<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
+
+  /* ---------- SCROLL REVEAL + LAZY ANIMATIONS ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  var dashRingDone = false, statsDone = false;
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('in');
+
+        if(entry.target.querySelector('#dashRing') && !dashRingDone){
+          dashRingDone = true;
+          var ring = document.getElementById('dashRing');
+          var scoreEl = document.getElementById('dashRingScore');
+          var score = 84;
+          var circumference = 314;
+          setTimeout(function(){
+            ring.style.strokeDashoffset = circumference - (circumference * score/100);
+          }, 150);
+          animateCount(scoreEl, score);
+        }
+
+        if(entry.target.classList.contains('stat-strip') && !statsDone){
+          statsDone = true;
+          entry.target.querySelectorAll('[data-count]').forEach(function(el){
+            animateCount(el, parseInt(el.getAttribute('data-count'), 10));
+          });
+        }
+      }
+    });
+  }, { threshold: 0.2 });
+  revealEls.forEach(function(el){ observer.observe(el); });
+
+})();
+</script>
+</body>
+</html>
